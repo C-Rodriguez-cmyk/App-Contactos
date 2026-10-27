@@ -1,6 +1,7 @@
 package com.my.first.app_contactos.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.my.first.app_contactos.model.Note
 import com.my.first.app_contactos.screens.AddNoteScreen
 import com.my.first.app_contactos.screens.HomeScreen
@@ -22,9 +24,31 @@ fun AppNavigation() {
     val notes = remember { mutableStateListOf<Note>() }
     var noteToEdit by remember { mutableStateOf<Note?>(null) }
 
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
     // Verificar si ya hay un usuario logueado en Firebase
-    val currentUser = FirebaseAuth.getInstance().currentUser
+    val currentUser = auth.currentUser
     val startScreen = if (currentUser != null) "home" else "login"
+
+    // Función: Consultar y mostrar las notas del usuario en tiempo real desde Firestore
+    LaunchedEffect(auth.currentUser?.uid) {
+        val userId = auth.currentUser?.uid
+        if (userId != null) {
+            db.collection("users").document(userId).collection("notes")
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null) return@addSnapshotListener
+                    if (snapshot != null) {
+                        val fetchedNotes = snapshot.documents.mapNotNull { doc ->
+                            val note = doc.toObject(Note::class.java)
+                            note?.copy(id = doc.id)
+                        }
+                        notes.clear()
+                        notes.addAll(fetchedNotes)
+                    }
+                }
+        }
+    }
 
     NavHost(navController = navController, startDestination = startScreen) {
 
@@ -64,6 +88,7 @@ fun AppNavigation() {
                     navController.navigate("add_note")
                 },
                 onNavigateToLogin = {
+                    notes.clear()
                     navController.navigate("login") {
                         popUpTo("home") { inclusive = true }
                     }
@@ -77,6 +102,12 @@ fun AppNavigation() {
                 noteToEdit = noteToEdit,
                 onBack = { navController.popBackStack() },
                 onSaveNote = { savedNote ->
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        db.collection("users").document(userId).collection("notes")
+                            .document(savedNote.id)
+                            .set(savedNote)
+                    }
                     val existingIndex = notes.indexOfFirst { it.id == savedNote.id }
                     if (existingIndex != -1) {
                         notes[existingIndex] = savedNote
@@ -85,6 +116,12 @@ fun AppNavigation() {
                     }
                 },
                 onDeleteNote = { noteToDelete ->
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        db.collection("users").document(userId).collection("notes")
+                            .document(noteToDelete.id)
+                            .delete()
+                    }
                     notes.remove(noteToDelete)
                 }
             )
