@@ -104,6 +104,17 @@ fun AddNoteScreen(
                 .padding(paddingValues)
                 .padding(20.dp)
         ) {
+            // Fecha de la nota en la vista de detalle
+            if (isEditing && noteToEdit != null && noteToEdit.date.isNotBlank()) {
+                Text(
+                    text = "Creado/Modificado: ${noteToEdit.date}",
+                    fontSize = 12.sp,
+                    color = celeste,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+            }
+
             // Título de la nota
             OutlinedTextField(
                 value = title,
