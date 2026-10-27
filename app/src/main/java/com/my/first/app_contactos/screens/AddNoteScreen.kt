@@ -146,7 +146,7 @@ fun AddNoteScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Botón Guardar / Actualizar Nota
+            // Lógica y Función Guardar Nota
             Button(
                 onClick = {
                     if (title.isNotBlank() || content.isNotBlank()) {

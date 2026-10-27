@@ -71,7 +71,7 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta de Formulario (Ver, Editar o Eliminar Nota)
+        // Ruta de Formulario (Ver, Editar o Eliminar Nota - Función Guardar Nota)
         composable("add_note") {
             AddNoteScreen(
                 noteToEdit = noteToEdit,
