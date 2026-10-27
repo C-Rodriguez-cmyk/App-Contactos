@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -22,6 +23,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -53,7 +55,33 @@ fun AddNoteScreen(
     val isEditing = noteToEdit != null
     var title by remember { mutableStateOf(noteToEdit?.title ?: "") }
     var content by remember { mutableStateOf(noteToEdit?.content ?: "") }
+    var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+    if (showDeleteDialog && isEditing && onDeleteNote != null && noteToEdit != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Eliminar nota", fontWeight = FontWeight.Bold) },
+            text = { Text("¿Estás seguro de que deseas eliminar esta nota?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        onDeleteNote(noteToEdit)
+                        Toast.makeText(context, "Nota eliminada", Toast.LENGTH_SHORT).show()
+                        onBack()
+                    }
+                ) {
+                    Text("Eliminar", color = Color(0xFFE53935), fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -77,11 +105,7 @@ fun AddNoteScreen(
                 actions = {
                     if (isEditing && onDeleteNote != null && noteToEdit != null) {
                         IconButton(
-                            onClick = {
-                                onDeleteNote(noteToEdit)
-                                Toast.makeText(context, "Nota eliminada", Toast.LENGTH_SHORT).show()
-                                onBack()
-                            }
+                            onClick = { showDeleteDialog = true }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
