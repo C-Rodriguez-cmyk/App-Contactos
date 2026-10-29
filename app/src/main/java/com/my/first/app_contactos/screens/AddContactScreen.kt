@@ -54,7 +54,7 @@ import com.my.first.app_contactos.ui.theme.negro
 import java.util.UUID
 
 /**
- * Implementar vista de detalle y edición del contacto
+ * Implementación de edición y eliminación de contactos
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -157,7 +157,7 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta de Formulario para Contactos (Crear, Editar o Eliminar Contacto)
+        // Ruta de Formulario para Contactos (Edición y Eliminación de Contactos)
         composable("add_contact") {
             AddContactScreen(
                 contactToEdit = contactToEdit,
