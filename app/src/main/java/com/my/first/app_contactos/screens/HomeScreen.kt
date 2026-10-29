@@ -361,6 +361,9 @@ fun NoteGridCard(
     }
 }
 
+/**
+ * Diseñar el componente visual de contacto (Tarjeta de contacto)
+ */
 @Composable
 fun ContactCard(
     contact: Contact,

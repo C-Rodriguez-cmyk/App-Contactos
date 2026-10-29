@@ -53,6 +53,9 @@ import com.my.first.app_contactos.ui.theme.celeste
 import com.my.first.app_contactos.ui.theme.negro
 import java.util.UUID
 
+/**
+ * Implementar vista de detalle y edición del contacto
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContactScreen(
