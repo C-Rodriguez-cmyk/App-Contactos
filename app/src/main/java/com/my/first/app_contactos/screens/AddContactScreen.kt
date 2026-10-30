@@ -3,6 +3,7 @@ package com.my.first.app_contactos.screens
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,10 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,9 +54,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.my.first.app_contactos.model.Contact
+import com.my.first.app_contactos.model.Note
 import com.my.first.app_contactos.ui.theme.Gris
 import com.my.first.app_contactos.ui.theme.blanco
 import com.my.first.app_contactos.ui.theme.celeste
@@ -59,16 +66,17 @@ import com.my.first.app_contactos.ui.theme.negro
 import com.my.first.app_contactos.utils.formatPhoneNumberWithCountryCode
 import java.util.UUID
 
-/**
- * RF17: Validación de campos en el formulario de contacto
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContactScreen(
     contactToEdit: Contact? = null,
+    linkedNotes: List<Note> = emptyList(),
     onBack: () -> Unit,
     onSaveContact: (Contact) -> Unit,
-    onDeleteContact: ((Contact) -> Unit)? = null
+    onDeleteContact: ((Contact) -> Unit)? = null,
+    onAddNoteClick: (() -> Unit)? = null,
+    onEditNoteClick: ((Note) -> Unit)? = null,
+    onToggleNoteCompleted: ((Note) -> Unit)? = null
 ) {
     val isEditing = contactToEdit != null
     var name by remember { mutableStateOf(contactToEdit?.name ?: "") }
@@ -110,7 +118,7 @@ fun AddContactScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = if (isEditing) "Editar Contacto" else "Nuevo Contacto",
+                        text = if (isEditing) "Detalle de Contacto" else "Nuevo Contacto",
                         fontWeight = FontWeight.Bold,
                         color = negro
                     )
@@ -226,7 +234,6 @@ fun AddContactScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    // RF15: Realizar llamada
                     OutlinedButton(
                         onClick = {
                             val formattedPhone = formatPhoneNumberWithCountryCode(phone)
@@ -321,6 +328,117 @@ fun AddContactScreen(
                         fontWeight = FontWeight.Bold,
                         color = blanco
                     )
+                }
+            }
+
+            // Sección Notely: Notas, Tareas y Recordatorios vinculados al contacto
+            if (isEditing) {
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = blanco),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column {
+                                Text(
+                                    text = "Notas y Recordatorios 📝",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = negro
+                                )
+                                Text(
+                                    text = "Pendientes con esta persona",
+                                    fontSize = 12.sp,
+                                    color = Gris
+                                )
+                            }
+
+                            if (onAddNoteClick != null) {
+                                TextButton(onClick = onAddNoteClick) {
+                                    Text("+ Nueva Nota", color = celeste, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        if (linkedNotes.isEmpty()) {
+                            Text(
+                                text = "No hay notas o tareas vinculadas a este contacto.",
+                                fontSize = 13.sp,
+                                color = Color.Gray,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            )
+                        } else {
+                            linkedNotes.forEach { note ->
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .clickable { onEditNoteClick?.invoke(note) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(12.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        if (note.isTask) {
+                                            Checkbox(
+                                                checked = note.isCompleted,
+                                                onCheckedChange = { onToggleNoteCompleted?.invoke(note) },
+                                                colors = CheckboxDefaults.colors(checkedColor = celeste)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                        }
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = note.title,
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = if (note.isCompleted) Color.Gray else negro,
+                                                textDecoration = if (note.isCompleted) TextDecoration.LineThrough else null
+                                            )
+                                            if (note.content.isNotBlank()) {
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = note.content,
+                                                    fontSize = 13.sp,
+                                                    color = Gris,
+                                                    maxLines = 2
+                                                )
+                                            }
+                                            if (note.reminderDate?.isNotBlank() == true) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Text(
+                                                    text = "⏰ Recordatorio: ${note.reminderDate}",
+                                                    fontSize = 11.sp,
+                                                    color = celeste,
+                                                    fontWeight = FontWeight.SemiBold
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

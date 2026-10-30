@@ -31,6 +31,7 @@ fun AppNavigation() {
 
     var noteToEdit by remember { mutableStateOf<Note?>(null) }
     var contactToEdit by remember { mutableStateOf<Contact?>(null) }
+    var initialContactIdForNote by remember { mutableStateOf<String?>(null) }
 
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
@@ -48,8 +49,12 @@ fun AppNavigation() {
                     if (error != null) return@addSnapshotListener
                     if (snapshot != null) {
                         val fetchedNotes = snapshot.documents.mapNotNull { doc ->
-                            val note = doc.toObject(Note::class.java)
-                            note?.copy(id = doc.id)
+                            try {
+                                val note = doc.toObject(Note::class.java)
+                                note?.copy(id = doc.id)
+                            } catch (_: Exception) {
+                                null
+                            }
                         }
                         notes.clear()
                         notes.addAll(fetchedNotes)
@@ -101,10 +106,12 @@ fun AppNavigation() {
                 contacts = contacts,
                 onAddNoteClick = {
                     noteToEdit = null
+                    initialContactIdForNote = null
                     navController.navigate("add_note")
                 },
                 onEditNote = { note ->
                     noteToEdit = note
+                    initialContactIdForNote = note.contactId
                     navController.navigate("add_note")
                 },
                 onAddContactClick = {
@@ -114,6 +121,19 @@ fun AppNavigation() {
                 onEditContact = { contact ->
                     contactToEdit = contact
                     navController.navigate("add_contact")
+                },
+                onToggleNoteCompleted = { noteToToggle ->
+                    val updatedNote = noteToToggle.copy(isCompleted = !noteToToggle.isCompleted)
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        db.collection("users").document(userId).collection("notes")
+                            .document(updatedNote.id)
+                            .set(updatedNote)
+                    }
+                    val idx = notes.indexOfFirst { it.id == updatedNote.id }
+                    if (idx != -1) {
+                        notes[idx] = updatedNote
+                    }
                 },
                 onNavigateToLogin = {
                     notes.clear()
@@ -128,6 +148,8 @@ fun AppNavigation() {
         composable("add_note") {
             AddNoteScreen(
                 noteToEdit = noteToEdit,
+                contacts = contacts,
+                initialContactId = initialContactIdForNote,
                 onBack = { navController.popBackStack() },
                 onSaveNote = { savedNote ->
                     val userId = auth.currentUser?.uid
@@ -162,8 +184,14 @@ fun AppNavigation() {
         }
 
         composable("add_contact") {
+            val currentContactId = contactToEdit?.id
+            val linkedNotes = if (currentContactId != null) {
+                notes.filter { it.contactId == currentContactId }
+            } else emptyList()
+
             AddContactScreen(
                 contactToEdit = contactToEdit,
+                linkedNotes = linkedNotes,
                 onBack = { navController.popBackStack() },
                 onSaveContact = { savedContact ->
                     val userId = auth.currentUser?.uid
@@ -193,6 +221,29 @@ fun AppNavigation() {
                             }
                     }
                     contacts.remove(contactToDelete)
+                },
+                onAddNoteClick = {
+                    noteToEdit = null
+                    initialContactIdForNote = contactToEdit?.id
+                    navController.navigate("add_note")
+                },
+                onEditNoteClick = { note ->
+                    noteToEdit = note
+                    initialContactIdForNote = note.contactId
+                    navController.navigate("add_note")
+                },
+                onToggleNoteCompleted = { noteToToggle ->
+                    val updatedNote = noteToToggle.copy(isCompleted = !noteToToggle.isCompleted)
+                    val userId = auth.currentUser?.uid
+                    if (userId != null) {
+                        db.collection("users").document(userId).collection("notes")
+                            .document(updatedNote.id)
+                            .set(updatedNote)
+                    }
+                    val idx = notes.indexOfFirst { it.id == updatedNote.id }
+                    if (idx != -1) {
+                        notes[idx] = updatedNote
+                    }
                 }
             )
         }

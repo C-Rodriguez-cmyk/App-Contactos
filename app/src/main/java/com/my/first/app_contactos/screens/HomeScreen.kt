@@ -38,6 +38,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -65,10 +66,8 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.my.first.app_contactos.model.Contact
 import com.my.first.app_contactos.model.Note
-import com.my.first.app_contactos.ui.theme.Gris
 import com.my.first.app_contactos.ui.theme.blanco
 import com.my.first.app_contactos.ui.theme.celeste
-import com.my.first.app_contactos.ui.theme.negro
 import com.my.first.app_contactos.utils.formatPhoneNumberWithCountryCode
 
 @Composable
@@ -107,7 +106,7 @@ fun HomeScreen(
         },
         bottomBar = {
             NavigationBar(
-                containerColor = blanco,
+                containerColor = MaterialTheme.colorScheme.surface,
                 tonalElevation = 8.dp
             ) {
                 NavigationBarItem(
@@ -145,7 +144,7 @@ fun HomeScreen(
                 )
             }
         },
-        containerColor = Color(0xFFF4F6F8)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -163,7 +162,7 @@ fun HomeScreen(
                         text = if (selectedTab == 0) "Mis Notas 📝" else "Mis Contactos 👤",
                         fontSize = 26.sp,
                         fontWeight = FontWeight.Bold,
-                        color = negro
+                        color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
                         text = userEmail,
@@ -187,7 +186,7 @@ fun HomeScreen(
                     Text(
                         text = "Cerrar Sesión",
                         color = Color.Red,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -214,12 +213,12 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = blanco,
-                    unfocusedContainerColor = blanco,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                     focusedBorderColor = celeste,
                     unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = negro,
-                    unfocusedTextColor = negro
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                 ),
                 singleLine = true
             )
@@ -329,7 +328,7 @@ fun NoteGridCard(
             .height(160.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = blanco),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
@@ -379,7 +378,7 @@ fun NoteGridCard(
                     text = note.title,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (note.isCompleted) Color.Gray else negro,
+                    color = if (note.isCompleted) Color.Gray else MaterialTheme.colorScheme.onSurface,
                     textDecoration = if (note.isCompleted) TextDecoration.LineThrough else null,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -390,7 +389,7 @@ fun NoteGridCard(
                 Text(
                     text = note.content,
                     fontSize = 12.sp,
-                    color = Gris,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -433,7 +432,7 @@ fun ContactCard(
             .fillMaxWidth()
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = blanco),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Row(
@@ -464,7 +463,7 @@ fun ContactCard(
                     text = contact.name.ifBlank { "Sin nombre" },
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Bold,
-                    color = negro,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -482,7 +481,7 @@ fun ContactCard(
                         Text(
                             text = contact.phone,
                             fontSize = 14.sp,
-                            color = Gris,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis
                         )
