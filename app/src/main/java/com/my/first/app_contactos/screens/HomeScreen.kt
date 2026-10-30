@@ -1,5 +1,7 @@
 package com.my.first.app_contactos.screens
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,12 +25,14 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -62,6 +66,7 @@ import com.my.first.app_contactos.ui.theme.Gris
 import com.my.first.app_contactos.ui.theme.blanco
 import com.my.first.app_contactos.ui.theme.celeste
 import com.my.first.app_contactos.ui.theme.negro
+import com.my.first.app_contactos.utils.formatPhoneNumberWithCountryCode
 
 @Composable
 fun HomeScreen(
@@ -73,7 +78,6 @@ fun HomeScreen(
     onEditContact: (Contact) -> Unit,
     onNavigateToLogin: () -> Unit
 ) {
-    // Usamos rememberSaveable para mantener la pestaña seleccionada al volver de editar un contacto/nota
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -145,7 +149,6 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            // Header con usuario y salir
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -181,7 +184,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Buscador
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -213,7 +215,6 @@ fun HomeScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Contenido según la Pestaña Seleccionada
             if (selectedTab == 0) {
                 // Pestaña 1: Mis Notas 📝
                 val filteredNotes = notes.sortedBy { it.timestamp }.filter {
@@ -259,11 +260,9 @@ fun HomeScreen(
                     }
                 }
             } else {
-                // Pestaña 2: Mis Contactos 👤 (CP08, CP09, CP10)
                 val filteredContacts = contacts.sortedBy { it.name.lowercase() }.filter {
                     it.name.contains(searchQuery, ignoreCase = true) ||
-                            it.phone.contains(searchQuery, ignoreCase = true) ||
-                            it.email.contains(searchQuery, ignoreCase = true)
+                            it.phone.contains(searchQuery, ignoreCase = true)
                 }
 
                 if (filteredContacts.isEmpty()) {
@@ -348,8 +347,9 @@ fun NoteGridCard(
             }
 
             if (note.date.isNotBlank()) {
+                val formattedDate = note.date.substringBefore(",")
                 Text(
-                    text = note.date,
+                    text = formattedDate,
                     fontSize = 10.sp,
                     color = celeste,
                     fontWeight = FontWeight.SemiBold,
@@ -361,9 +361,6 @@ fun NoteGridCard(
     }
 }
 
-/**
- * Diseñar el componente visual de contacto (Tarjeta de contacto)
- */
 @Composable
 fun ContactCard(
     contact: Contact,
@@ -383,7 +380,6 @@ fun ContactCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Avatar con inicial
             val initial = contact.name.trim().take(1).uppercase().ifBlank { "?" }
             Box(
                 modifier = Modifier
@@ -401,7 +397,6 @@ fun ContactCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Información del contacto
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = contact.name.ifBlank { "Sin nombre" },
@@ -431,23 +426,40 @@ fun ContactCard(
                         )
                     }
                 }
+            }
 
-                if (contact.email.isNotBlank()) {
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+            if (contact.phone.isNotBlank()) {
+                val context = LocalContext.current
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        onClick = {
+                            val formattedPhone = formatPhoneNumberWithCountryCode(contact.phone)
+                            val intent = Intent(Intent.ACTION_DIAL).apply {
+                                data = Uri.parse("tel:$formattedPhone")
+                            }
+                            context.startActivity(intent)
+                        }
+                    ) {
                         Icon(
-                            imageVector = Icons.Default.Email,
-                            contentDescription = null,
-                            tint = Color.Gray,
-                            modifier = Modifier.size(14.dp)
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = "Realizar llamada",
+                            tint = Color(0xFF4CAF50)
                         )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = contact.email,
-                            fontSize = 13.sp,
-                            color = Color.Gray,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
+                    }
+
+                    IconButton(
+                        onClick = {
+                            val formattedPhone = formatPhoneNumberWithCountryCode(contact.phone)
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("smsto:$formattedPhone")
+                            }
+                            context.startActivity(intent)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Enviar mensaje",
+                            tint = celeste
                         )
                     }
                 }
