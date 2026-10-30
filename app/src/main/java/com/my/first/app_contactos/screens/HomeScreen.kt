@@ -27,12 +27,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -45,6 +45,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -55,7 +56,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,6 +79,7 @@ fun HomeScreen(
     onEditNote: (Note) -> Unit,
     onAddContactClick: () -> Unit,
     onEditContact: (Contact) -> Unit,
+    onToggleNoteCompleted: ((Note) -> Unit)? = null,
     onNavigateToLogin: () -> Unit
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
@@ -168,7 +172,7 @@ fun HomeScreen(
                     )
                 }
 
-                IconButton(
+                TextButton(
                     onClick = {
                         FirebaseAuth.getInstance().signOut()
                         onNavigateToLogin()
@@ -178,6 +182,13 @@ fun HomeScreen(
                         imageVector = Icons.AutoMirrored.Filled.ExitToApp,
                         contentDescription = "Cerrar Sesión",
                         tint = Color.Red
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "Cerrar Sesión",
+                        color = Color.Red,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
@@ -254,7 +265,8 @@ fun HomeScreen(
                         items(filteredNotes, key = { it.id }) { note ->
                             NoteGridCard(
                                 note = note,
-                                onClick = { onEditNote(note) }
+                                onClick = { onEditNote(note) },
+                                onToggleNoteCompleted = { onToggleNoteCompleted?.invoke(note) }
                             )
                         }
                     }
@@ -308,12 +320,13 @@ fun HomeScreen(
 @Composable
 fun NoteGridCard(
     note: Note,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    onToggleNoteCompleted: (() -> Unit)? = null
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
+            .height(160.dp)
             .clickable { onClick() },
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = blanco),
@@ -322,40 +335,89 @@ fun NoteGridCard(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(14.dp),
+                .padding(12.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    if (note.contactName?.isNotBlank() == true) {
+                        Text(
+                            text = "👤 ${note.contactName}",
+                            fontSize = 11.sp,
+                            color = celeste,
+                            fontWeight = FontWeight.Bold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    if (note.isTask && onToggleNoteCompleted != null) {
+                        IconButton(
+                            onClick = onToggleNoteCompleted,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = if (note.isCompleted) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                                contentDescription = "Marcar completada",
+                                tint = if (note.isCompleted) Color(0xFF4CAF50) else Color.Gray,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+
                 Text(
                     text = note.title,
-                    fontSize = 16.sp,
+                    fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = negro,
+                    color = if (note.isCompleted) Color.Gray else negro,
+                    textDecoration = if (note.isCompleted) TextDecoration.LineThrough else null,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
                     text = note.content,
-                    fontSize = 13.sp,
+                    fontSize = 12.sp,
                     color = Gris,
-                    maxLines = 4,
+                    maxLines = 3,
                     overflow = TextOverflow.Ellipsis
                 )
             }
 
-            if (note.date.isNotBlank()) {
-                val formattedDate = note.date.substringBefore(",")
-                Text(
-                    text = formattedDate,
-                    fontSize = 10.sp,
-                    color = celeste,
-                    fontWeight = FontWeight.SemiBold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+            Column {
+                if (note.reminderDate?.isNotBlank() == true) {
+                    val timeText = if (note.reminderTime?.isNotBlank() == true) " ${note.reminderTime}" else ""
+                    Text(
+                        text = "⏰ ${note.reminderDate}$timeText",
+                        fontSize = 10.sp,
+                        color = Color(0xFFE65100),
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                } else if (note.date.isNotBlank()) {
+                    val formattedDate = note.date.substringBefore(",")
+                    Text(
+                        text = formattedDate,
+                        fontSize = 10.sp,
+                        color = celeste,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
         }
     }
