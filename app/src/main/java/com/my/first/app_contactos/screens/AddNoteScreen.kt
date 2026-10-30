@@ -61,8 +61,9 @@ fun AddNoteScreen(
     if (showDeleteDialog && isEditing && onDeleteNote != null && noteToEdit != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar nota", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de que deseas eliminar esta nota?") },
+            containerColor = blanco,
+            title = { Text("Eliminar nota", fontWeight = FontWeight.Bold, color = negro) },
+            text = { Text("¿Estás seguro de que deseas eliminar esta nota?", color = negro) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -77,7 +78,7 @@ fun AddNoteScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text("Cancelar", color = negro, fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -128,10 +129,10 @@ fun AddNoteScreen(
                 .padding(paddingValues)
                 .padding(20.dp)
         ) {
-            // Fecha de la nota en la vista de detalle
             if (isEditing && noteToEdit != null && noteToEdit.date.isNotBlank()) {
+                val formattedDate = noteToEdit.date.substringBefore(",")
                 Text(
-                    text = "Creado/Modificado: ${noteToEdit.date}",
+                    text = "Creado/Modificado: $formattedDate",
                     fontSize = 12.sp,
                     color = celeste,
                     fontWeight = FontWeight.Medium,
@@ -139,7 +140,6 @@ fun AddNoteScreen(
                 )
             }
 
-            // Título de la nota
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
@@ -159,7 +159,6 @@ fun AddNoteScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Contenido / Descripción
             OutlinedTextField(
                 value = content,
                 onValueChange = { content = it },
@@ -181,12 +180,11 @@ fun AddNoteScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Lógica y Función Guardar Nota
             Button(
                 onClick = {
                     if (title.isNotBlank() || content.isNotBlank()) {
                         val currentDate = java.text.SimpleDateFormat(
-                            "dd MMM yyyy, hh:mm a",
+                            "dd MMM yyyy",
                             java.util.Locale.getDefault()
                         ).format(java.util.Date())
 

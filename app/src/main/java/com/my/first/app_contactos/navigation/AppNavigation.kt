@@ -32,15 +32,12 @@ fun AppNavigation() {
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
-    // Verificar si ya hay un usuario logueado en Firebase
     val currentUser = auth.currentUser
     val startScreen = if (currentUser != null) "home" else "login"
 
-    // Sincronización en tiempo real con Firestore para Notas y Contactos
     LaunchedEffect(auth.currentUser?.uid) {
         val userId = auth.currentUser?.uid
         if (userId != null) {
-            // Sincronizar Notas
             db.collection("users").document(userId).collection("notes")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) return@addSnapshotListener
@@ -54,7 +51,6 @@ fun AppNavigation() {
                     }
                 }
 
-            // Sincronizar Contactos (CP08, CP09, CP10)
             db.collection("users").document(userId).collection("contacts")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) return@addSnapshotListener
@@ -72,7 +68,6 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = startScreen) {
 
-        // Ruta de Login
         composable("login") {
             LoginScreen(
                 onNavigateToRegister = { navController.navigate("register") },
@@ -84,7 +79,6 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta de Registro
         composable("register") {
             RegisterScreen(
                 onNavigateToLogin = {
@@ -95,7 +89,6 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta Principal (Home - Pestañas de Notas y Contactos)
         composable("home") {
             HomeScreen(
                 notes = notes,
@@ -126,7 +119,6 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta de Formulario para Notas (Crear, Editar o Eliminar Nota)
         composable("add_note") {
             AddNoteScreen(
                 noteToEdit = noteToEdit,
@@ -157,7 +149,6 @@ fun AppNavigation() {
             )
         }
 
-        // Ruta de Formulario para Contactos (Edición y Eliminación de Contactos)
         composable("add_contact") {
             AddContactScreen(
                 contactToEdit = contactToEdit,

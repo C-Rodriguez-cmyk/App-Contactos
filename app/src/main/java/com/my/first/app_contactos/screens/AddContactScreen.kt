@@ -1,6 +1,9 @@
 package com.my.first.app_contactos.screens
 
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,10 +19,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.AlertDialog
@@ -27,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
@@ -48,13 +52,15 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.my.first.app_contactos.model.Contact
+import com.my.first.app_contactos.ui.theme.Gris
 import com.my.first.app_contactos.ui.theme.blanco
 import com.my.first.app_contactos.ui.theme.celeste
 import com.my.first.app_contactos.ui.theme.negro
+import com.my.first.app_contactos.utils.formatPhoneNumberWithCountryCode
 import java.util.UUID
 
 /**
- * Implementación de edición y eliminación de contactos
+ * RF17: Validación de campos en el formulario de contacto
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,17 +73,18 @@ fun AddContactScreen(
     val isEditing = contactToEdit != null
     var name by remember { mutableStateOf(contactToEdit?.name ?: "") }
     var phone by remember { mutableStateOf(contactToEdit?.phone ?: "") }
-    var email by remember { mutableStateOf(contactToEdit?.email ?: "") }
-    var address by remember { mutableStateOf(contactToEdit?.address ?: "") }
+    var nameError by remember { mutableStateOf<String?>(null) }
+    var phoneError by remember { mutableStateOf<String?>(null) }
+
     var showDeleteDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    // Diálogo de confirmación para CP10 (Eliminar contacto)
     if (showDeleteDialog && isEditing && onDeleteContact != null && contactToEdit != null) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar contacto", fontWeight = FontWeight.Bold) },
-            text = { Text("¿Estás seguro de que deseas eliminar a ${contactToEdit.name.ifBlank { "este contacto" }}?") },
+            containerColor = blanco,
+            title = { Text("Eliminar contacto", fontWeight = FontWeight.Bold, color = negro) },
+            text = { Text("¿Estás seguro de que deseas eliminar a ${contactToEdit.name.ifBlank { "este contacto" }}?", color = negro) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -92,7 +99,7 @@ fun AddContactScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar")
+                    Text("Cancelar", color = negro, fontWeight = FontWeight.Bold)
                 }
             }
         )
@@ -142,14 +149,22 @@ fun AddContactScreen(
                 .padding(20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Nombre del contacto (CP08 / CP09)
             OutlinedTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = {
+                    name = it
+                    if (it.trim().isNotBlank()) nameError = null
+                },
                 label = { Text("Nombre Completo") },
                 placeholder = { Text("Ej. Juan Pérez") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Person, contentDescription = null, tint = celeste)
+                },
+                isError = nameError != null,
+                supportingText = {
+                    if (nameError != null) {
+                        Text(nameError!!, color = Color(0xFFE53935), fontSize = 12.sp)
+                    }
                 },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
@@ -157,99 +172,124 @@ fun AddContactScreen(
                     focusedContainerColor = blanco,
                     unfocusedContainerColor = blanco,
                     focusedBorderColor = celeste,
-                    unfocusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Gris.copy(alpha = 0.5f),
                     focusedTextColor = negro,
-                    unfocusedTextColor = negro
+                    unfocusedTextColor = negro,
+                    focusedLabelColor = negro,
+                    unfocusedLabelColor = Gris,
+                    errorBorderColor = Color(0xFFE53935),
+                    errorLabelColor = Color(0xFFE53935)
                 ),
                 singleLine = true
             )
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Teléfono (CP08 / CP09)
             OutlinedTextField(
                 value = phone,
-                onValueChange = { phone = it },
+                onValueChange = {
+                    phone = it
+                    if (it.trim().isNotBlank()) phoneError = null
+                },
                 label = { Text("Teléfono") },
                 placeholder = { Text("Ej. 8888-8888") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Phone, contentDescription = null, tint = celeste)
                 },
+                isError = phoneError != null,
+                supportingText = {
+                    if (phoneError != null) {
+                        Text(phoneError!!, color = Color(0xFFE53935), fontSize = 12.sp)
+                    }
+                },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = blanco,
                     unfocusedContainerColor = blanco,
                     focusedBorderColor = celeste,
-                    unfocusedBorderColor = Color.Transparent,
+                    unfocusedBorderColor = Gris.copy(alpha = 0.5f),
                     focusedTextColor = negro,
-                    unfocusedTextColor = negro
+                    unfocusedTextColor = negro,
+                    focusedLabelColor = negro,
+                    unfocusedLabelColor = Gris,
+                    errorBorderColor = Color(0xFFE53935),
+                    errorLabelColor = Color(0xFFE53935)
                 ),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
             )
 
-            Spacer(modifier = Modifier.height(14.dp))
+            if (phone.isNotBlank()) {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    // RF15: Realizar llamada
+                    OutlinedButton(
+                        onClick = {
+                            val formattedPhone = formatPhoneNumberWithCountryCode(phone)
+                            val intent = Intent(Intent.ACTION_DIAL).apply {
+                                data = Uri.parse("tel:$formattedPhone")
+                            }
+                            context.startActivity(intent)
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Phone,
+                            contentDescription = "Realizar llamada",
+                            tint = Color(0xFF4CAF50),
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Llamar", color = negro, fontSize = 14.sp)
+                    }
 
-            // Correo electrónico
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Correo Electrónico") },
-                placeholder = { Text("Ej. correo@ejemplo.com") },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.Email, contentDescription = null, tint = celeste)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = blanco,
-                    unfocusedContainerColor = blanco,
-                    focusedBorderColor = celeste,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = negro,
-                    unfocusedTextColor = negro
-                ),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Dirección / Notas
-            OutlinedTextField(
-                value = address,
-                onValueChange = { address = it },
-                label = { Text("Dirección / Notas") },
-                placeholder = { Text("Ej. San José, Costa Rica") },
-                leadingIcon = {
-                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = null, tint = celeste)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = blanco,
-                    unfocusedContainerColor = blanco,
-                    focusedBorderColor = celeste,
-                    unfocusedBorderColor = Color.Transparent,
-                    focusedTextColor = negro,
-                    unfocusedTextColor = negro
-                ),
-                maxLines = 3
-            )
+                    OutlinedButton(
+                        onClick = {
+                            val formattedPhone = formatPhoneNumberWithCountryCode(phone)
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("smsto:$formattedPhone")
+                            }
+                            context.startActivity(intent)
+                        },
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Send,
+                            contentDescription = "Enviar mensaje",
+                            tint = celeste,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Mensaje", color = negro, fontSize = 14.sp)
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.height(28.dp))
 
-            // Botón Guardar (CP08: Crear contacto / CP09: Editar contacto)
             Button(
                 onClick = {
-                    if (name.isNotBlank() || phone.isNotBlank()) {
+                    val cleanDigits = phone.replace(Regex("[^0-9]"), "")
+                    val isNameValid = name.trim().isNotBlank()
+                    val isPhoneValid = phone.trim().isNotBlank() && cleanDigits.length >= 8
+
+                    nameError = if (!isNameValid) "El nombre es obligatorio" else null
+                    phoneError = when {
+                        phone.trim().isBlank() -> "El teléfono es obligatorio"
+                        cleanDigits.length < 8 -> "El teléfono debe tener al menos 8 dígitos"
+                        else -> null
+                    }
+
+                    if (isNameValid && isPhoneValid) {
+                        val formattedPhone = formatPhoneNumberWithCountryCode(phone)
                         val savedContact = Contact(
                             id = contactToEdit?.id ?: UUID.randomUUID().toString(),
-                            name = name.ifBlank { "Sin Nombre" },
-                            phone = phone,
-                            email = email,
-                            address = address
+                            name = name.trim(),
+                            phone = formattedPhone
                         )
                         onSaveContact(savedContact)
                         Toast.makeText(
@@ -259,7 +299,7 @@ fun AddContactScreen(
                         ).show()
                         onBack()
                     } else {
-                        Toast.makeText(context, "Por favor ingresa al menos el nombre o teléfono", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Por favor completa correctamente los campos requeridos", Toast.LENGTH_SHORT).show()
                     }
                 },
                 modifier = Modifier
