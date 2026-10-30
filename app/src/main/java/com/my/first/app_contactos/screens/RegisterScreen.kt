@@ -46,7 +46,6 @@ fun RegisterScreen(
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
 
-    // Launcher para el inicio de sesión / registro con Google
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -134,219 +133,226 @@ fun RegisterScreen(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = blanco),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_notely),
+                contentDescription = "Logo de la App",
+                modifier = Modifier.size(250.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = blanco),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Text(
-                    text = "Crear Cuenta",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = negro
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Crear Cuenta",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = negro
+                    )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo Correo
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    placeholder = { Text("Correo Electrónico", color = Gris) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = blanco,
-                        unfocusedContainerColor = blanco,
-                        focusedBorderColor = celeste,
-                        unfocusedBorderColor = Gris,
-                        focusedTextColor = negro,
-                        unfocusedTextColor = negro
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        placeholder = { Text("Correo Electrónico", color = Gris) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = blanco,
+                            unfocusedContainerColor = blanco,
+                            focusedBorderColor = celeste,
+                            unfocusedBorderColor = Gris,
+                            focusedTextColor = negro,
+                            unfocusedTextColor = negro
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo Contraseña
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = { Text("Contraseña", color = Gris) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    visualTransformation = PasswordVisualTransformation(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = blanco,
-                        unfocusedContainerColor = blanco,
-                        focusedBorderColor = celeste,
-                        unfocusedBorderColor = Gris,
-                        focusedTextColor = negro,
-                        unfocusedTextColor = negro
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                )
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text("Contraseña", color = Gris) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = blanco,
+                            unfocusedContainerColor = blanco,
+                            focusedBorderColor = celeste,
+                            unfocusedBorderColor = Gris,
+                            focusedTextColor = negro,
+                            unfocusedTextColor = negro
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo Confirmar Contraseña
-                OutlinedTextField(
-                    value = confirmPassword,
-                    onValueChange = { confirmPassword = it },
-                    placeholder = { Text("Confirmar Contraseña", color = Gris) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    visualTransformation = PasswordVisualTransformation(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = blanco,
-                        unfocusedContainerColor = blanco,
-                        focusedBorderColor = celeste,
-                        unfocusedBorderColor = Gris,
-                        focusedTextColor = negro,
-                        unfocusedTextColor = negro
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                )
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        placeholder = { Text("Confirmar Contraseña", color = Gris) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = blanco,
+                            unfocusedContainerColor = blanco,
+                            focusedBorderColor = celeste,
+                            unfocusedBorderColor = Gris,
+                            focusedTextColor = negro,
+                            unfocusedTextColor = negro
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
 
-                // Botón Registrarse
-                Button(
-                    onClick = {
-                        if (email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()) {
-                            if (password == confirmPassword) {
-                                if (password.length >= 6) {
-                                    auth.createUserWithEmailAndPassword(email, password)
-                                        .addOnCompleteListener { task ->
-                                            if (task.isSuccessful) {
-                                                Toast.makeText(
-                                                    context,
-                                                    "¡Cuenta creada con éxito!",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                                onNavigateToLogin()
-                                            } else {
-                                                Toast.makeText(
-                                                    context,
-                                                    "Error: ${task.exception?.message}",
-                                                    Toast.LENGTH_LONG
-                                                ).show()
+                    Button(
+                        onClick = {
+                            if (email.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()) {
+                                if (password == confirmPassword) {
+                                    if (password.length >= 6) {
+                                        auth.createUserWithEmailAndPassword(email, password)
+                                            .addOnCompleteListener { task ->
+                                                if (task.isSuccessful) {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "¡Cuenta creada con éxito!",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    onNavigateToLogin()
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Error: ${task.exception?.message}",
+                                                        Toast.LENGTH_LONG
+                                                    ).show()
+                                                }
                                             }
-                                        }
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            "La contraseña debe tener al menos 6 caracteres",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 } else {
                                     Toast.makeText(
                                         context,
-                                        "La contraseña debe tener al menos 6 caracteres",
+                                        "Las contraseñas no coinciden",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
                             } else {
                                 Toast.makeText(
                                     context,
-                                    "Las contraseñas no coinciden",
+                                    "Por favor completa todos los campos",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
-                        } else {
-                            Toast.makeText(
-                                context,
-                                "Por favor completa todos los campos",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = celeste)
-                ) {
-                    Text(
-                        text = "Registrarse",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = blanco
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Divisor "O"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalDivider(
-                        modifier = Modifier.weight(1f),
-                        color = Gris.copy(alpha = 0.4f)
-                    )
-                    Text(
-                        text = "  O  ",
-                        color = Gris,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.weight(1f),
-                        color = Gris.copy(alpha = 0.4f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Botón Continuar con Google
-                OutlinedButton(
-                    onClick = { launchGoogleSignIn() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Gris.copy(alpha = 0.4f)),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = blanco)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = celeste)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google_logo),
-                            contentDescription = "Google Logo",
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Continuar con Google",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = negro
+                            text = "Registrarse",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = blanco
                         )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Volver a Login
-                Row {
-                    Text(text = "¿Ya tienes cuenta? ", color = Gris, fontSize = 14.sp)
-                    Text(
-                        text = "Inicia sesión",
-                        color = celeste,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        modifier = Modifier.clickable { onNavigateToLogin() }
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Gris.copy(alpha = 0.4f)
+                        )
+                        Text(
+                            text = "  O  ",
+                            color = Gris,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Gris.copy(alpha = 0.4f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedButton(
+                        onClick = { launchGoogleSignIn() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Gris.copy(alpha = 0.4f)),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = blanco)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = "Google Logo",
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Continuar con Google",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = negro
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Row {
+                        Text(text = "¿Ya tienes cuenta? ", color = Gris, fontSize = 14.sp)
+                        Text(
+                            text = "Inicia sesión",
+                            color = celeste,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.clickable { onNavigateToLogin() }
+                        )
+                    }
                 }
             }
         }

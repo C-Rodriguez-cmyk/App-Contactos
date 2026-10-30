@@ -45,7 +45,6 @@ fun LoginScreen(
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
 
-    // Launcher para el inicio de sesión con Google
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -128,172 +127,179 @@ fun LoginScreen(
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = blanco),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            Column(
+            Image(
+                painter = painterResource(id = R.drawable.ic_logo_notely),
+                contentDescription = "Logo de la App",
+                modifier = Modifier.size(250.dp)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(28.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .wrapContentHeight(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = blanco),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
-                Text(
-                    text = "Iniciar Sesión",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = negro
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Campo Correo
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    placeholder = { Text("Correo Electrónico", color = Gris) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = blanco,
-                        unfocusedContainerColor = blanco,
-                        focusedBorderColor = celeste,
-                        unfocusedBorderColor = Gris,
-                        focusedTextColor = negro,
-                        unfocusedTextColor = negro
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Campo Contraseña
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = { Text("Contraseña", color = Gris) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    visualTransformation = PasswordVisualTransformation(),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = blanco,
-                        unfocusedContainerColor = blanco,
-                        focusedBorderColor = celeste,
-                        unfocusedBorderColor = Gris,
-                        focusedTextColor = negro,
-                        unfocusedTextColor = negro
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // Botón Entrar
-                Button(
-                    onClick = {
-                        if (email.isNotBlank() && password.isNotBlank()) {
-                            auth.signInWithEmailAndPassword(email, password)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        onNavigateToHome()
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            "Error: ${task.exception?.message}",
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                }
-                        } else {
-                            Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
-                        }
-                    },
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = celeste)
+                        .padding(28.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Entrar",
-                        fontSize = 16.sp,
+                        text = "Iniciar Sesión",
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold,
-                        color = blanco
+                        color = negro
                     )
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // Divisor "O"
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    HorizontalDivider(
-                        modifier = Modifier.weight(1f),
-                        color = Gris.copy(alpha = 0.4f)
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        placeholder = { Text("Correo Electrónico", color = Gris) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = blanco,
+                            unfocusedContainerColor = blanco,
+                            focusedBorderColor = celeste,
+                            unfocusedBorderColor = Gris,
+                            focusedTextColor = negro,
+                            unfocusedTextColor = negro
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                     )
-                    Text(
-                        text = "  O  ",
-                        color = Gris,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium
-                    )
-                    HorizontalDivider(
-                        modifier = Modifier.weight(1f),
-                        color = Gris.copy(alpha = 0.4f)
-                    )
-                }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                // Botón Iniciar sesión con Google
-                OutlinedButton(
-                    onClick = { launchGoogleSignIn() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    border = BorderStroke(1.dp, Gris.copy(alpha = 0.4f)),
-                    colors = ButtonDefaults.outlinedButtonColors(containerColor = blanco)
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        placeholder = { Text("Contraseña", color = Gris) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        visualTransformation = PasswordVisualTransformation(),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = blanco,
+                            unfocusedContainerColor = blanco,
+                            focusedBorderColor = celeste,
+                            unfocusedBorderColor = Gris,
+                            focusedTextColor = negro,
+                            unfocusedTextColor = negro
+                        ),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Button(
+                        onClick = {
+                            if (email.isNotBlank() && password.isNotBlank()) {
+                                auth.signInWithEmailAndPassword(email, password)
+                                    .addOnCompleteListener { task ->
+                                        if (task.isSuccessful) {
+                                            onNavigateToHome()
+                                        } else {
+                                            Toast.makeText(
+                                                context,
+                                                "Error: ${task.exception?.message}",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    }
+                            } else {
+                                Toast.makeText(context, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = celeste)
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_google_logo),
-                            contentDescription = "Google Logo",
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
                         Text(
-                            text = "Iniciar sesión con Google",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = negro
+                            text = "Entrar",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = blanco
                         )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Ir a Registro
-                Row {
-                    Text(text = "¿No tienes cuenta? ", color = Gris, fontSize = 14.sp)
-                    Text(
-                        text = "Regístrate aquí",
-                        color = celeste,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 14.sp,
-                        modifier = Modifier.clickable { onNavigateToRegister() }
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Gris.copy(alpha = 0.4f)
+                        )
+                        Text(
+                            text = "  O  ",
+                            color = Gris,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        HorizontalDivider(
+                            modifier = Modifier.weight(1f),
+                            color = Gris.copy(alpha = 0.4f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedButton(
+                        onClick = { launchGoogleSignIn() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, Gris.copy(alpha = 0.4f)),
+                        colors = ButtonDefaults.outlinedButtonColors(containerColor = blanco)
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = "Google Logo",
+                                modifier = Modifier.size(22.dp)
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Iniciar sesión con Google",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = negro
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Row {
+                        Text(text = "¿No tienes cuenta? ", color = Gris, fontSize = 14.sp)
+                        Text(
+                            text = "Regístrate aquí",
+                            color = celeste,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 14.sp,
+                            modifier = Modifier.clickable { onNavigateToRegister() }
+                        )
+                    }
                 }
             }
         }

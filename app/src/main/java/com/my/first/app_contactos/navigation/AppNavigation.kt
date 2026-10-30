@@ -1,5 +1,6 @@
 package com.my.first.app_contactos.navigation
 
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -7,6 +8,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +25,7 @@ import com.my.first.app_contactos.screens.RegisterScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
     val notes = remember { mutableStateListOf<Note>() }
     val contacts = remember { mutableStateListOf<Contact>() }
 
@@ -35,9 +38,11 @@ fun AppNavigation() {
     val currentUser = auth.currentUser
     val startScreen = if (currentUser != null) "home" else "login"
 
+    // Sincronización en tiempo real con Firestore para Notas y Contactos
     LaunchedEffect(auth.currentUser?.uid) {
         val userId = auth.currentUser?.uid
         if (userId != null) {
+            // Sincronizar Notas
             db.collection("users").document(userId).collection("notes")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) return@addSnapshotListener
@@ -51,6 +56,7 @@ fun AppNavigation() {
                     }
                 }
 
+            // Sincronizar Contactos
             db.collection("users").document(userId).collection("contacts")
                 .addSnapshotListener { snapshot, error ->
                     if (error != null) return@addSnapshotListener
@@ -129,6 +135,9 @@ fun AppNavigation() {
                         db.collection("users").document(userId).collection("notes")
                             .document(savedNote.id)
                             .set(savedNote)
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Error Firestore (Guardar Nota): ${e.message}", Toast.LENGTH_LONG).show()
+                            }
                     }
                     val existingIndex = notes.indexOfFirst { it.id == savedNote.id }
                     if (existingIndex != -1) {
@@ -143,6 +152,9 @@ fun AppNavigation() {
                         db.collection("users").document(userId).collection("notes")
                             .document(noteToDelete.id)
                             .delete()
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Error Firestore (Eliminar Nota): ${e.message}", Toast.LENGTH_LONG).show()
+                            }
                     }
                     notes.remove(noteToDelete)
                 }
@@ -159,10 +171,13 @@ fun AppNavigation() {
                         db.collection("users").document(userId).collection("contacts")
                             .document(savedContact.id)
                             .set(savedContact)
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Error Firestore (Guardar Contacto): ${e.message}", Toast.LENGTH_LONG).show()
+                            }
                     }
                     val existingIndex = contacts.indexOfFirst { it.id == savedContact.id }
                     if (existingIndex != -1) {
-                        contacts[existingIndex] = savedContact
+                        contacts[existingIndex] = savedContact.copy(id = savedContact.id)
                     } else {
                         contacts.add(0, savedContact)
                     }
@@ -173,6 +188,9 @@ fun AppNavigation() {
                         db.collection("users").document(userId).collection("contacts")
                             .document(contactToDelete.id)
                             .delete()
+                            .addOnFailureListener { e ->
+                                Toast.makeText(context, "Error Firestore (Eliminar Contacto): ${e.message}", Toast.LENGTH_LONG).show()
+                            }
                     }
                     contacts.remove(contactToDelete)
                 }
